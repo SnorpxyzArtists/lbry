@@ -8,22 +8,27 @@ can and probably will change functionality and break backwards compatability
 at anytime.
 
 ## [Unreleased]
-### Added
-  * Add link to instructions on how to change the default peer port
-  * Add `peer_port` to settings configurable using `settings_set`
-  * Added an option to disable max key fee check.
+### Security
+  *
+  *
 
-### Changed
-  * claim_show API command no longer takes name as argument
+### Added
+  * Added validation of currencies.
   *
 
 ### Fixed
-  * Fix for https://github.com/lbryio/lbry/issues/750
-  * Fixed inconsistencies in claim_show output
-  * Fixed daemon process hanging when started without an internet connection
-  * Fixed https://github.com/lbryio/lbry/issues/774
+  *
+  *
 
 ### Deprecated
+  *
+  *
+
+### Changed
+  *
+  *
+
+### Added
   *
   *
 
@@ -31,13 +36,38 @@ at anytime.
   *
   *
 
+
+## [0.14.2] - 2017-07-24
+### Fixed
+ * Fix for https://github.com/lbryio/lbry/issues/750
+ * Fixed inconsistencies in claim_show output
+ * Fixed daemon process hanging when started without an internet connection
+ * Fixed https://github.com/lbryio/lbry/issues/774
+ * Fix XDG compliance on Linux
+ * Fixed https://github.com/lbryio/lbry/issues/760
+ * Fixed default directories bug
+
+### Changed
+ * claim_show API command no longer takes name as argument
+ * Linux default downloads folder changed from `~/Downloads` to `XDG_DOWNLOAD_DIR`
+ * Linux folders moved from the home directory to `~/.local/share/lbry`
+ * Windows folders moved from `%AppData%/Roaming` to `%AppData%/Local/lbry`
+ * Changed `claim_list_by_channel` to return the `claims_in_channel` count instead of the `claims_in_channel_pages` count
+
+### Added
+ * Add link to instructions on how to change the default peer port
+ * Add `peer_port` to settings configurable using `settings_set`
+ * Added an option to disable max key fee check.
+
+
 ## [0.14.1] - 2017-07-07
 
 ### Fixed
  * Fixed timeout behaviour when calling API command get
  * Fixed https://github.com/lbryio/lbry/issues/765
-
-
+ 
+### Removed
+  * Removed stream_info_cache.json from daemon.py
 
 ## [0.14.0] - 2017-07-05
 

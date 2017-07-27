@@ -165,11 +165,12 @@ class Daemon(AuthJSONRPCServer):
     LBRYnet daemon, a jsonrpc interface to lbry functions
     """
 
+    allowed_during_startup = [
+        'daemon_stop', 'status', 'version',
+    ]
+
     def __init__(self, root, analytics_manager):
         AuthJSONRPCServer.__init__(self, conf.settings['use_auth_http'])
-        self.allowed_during_startup = [
-            'stop', 'status', 'version',
-        ]
         self.db_dir = conf.settings['data_dir']
         self.download_directory = conf.settings['download_directory']
         if conf.settings['BLOBFILES_DIR'] == "blobfiles":
@@ -210,7 +211,6 @@ class Daemon(AuthJSONRPCServer):
         self.query_handlers = {}
         self.waiting_on = {}
         self.streams = {}
-        self.name_cache = {}
         self.exchange_rate_manager = ExchangeRateManager()
         calls = {
             Checker.INTERNET_CONNECTION: LoopingCall(CheckInternetConnection(self)),
@@ -247,7 +247,6 @@ class Daemon(AuthJSONRPCServer):
         yield self._initial_setup()
         yield threads.deferToThread(self._setup_data_directory)
         yield self._check_db_migration()
-        yield self._load_caches()
         yield self._get_session()
         yield self._get_analytics()
         yield add_lbry_file_to_sd_identifier(self.sd_identifier)
@@ -270,18 +269,6 @@ class Daemon(AuthJSONRPCServer):
 
         d = _log_platform()
         return d
-
-    def _load_caches(self):
-        name_cache_filename = os.path.join(self.db_dir, "stream_info_cache.json")
-
-        if os.path.isfile(name_cache_filename):
-            with open(name_cache_filename, "r") as name_cache_file:
-                name_cache = name_cache_file.read()
-            try:
-                self.name_cache = json.loads(name_cache)
-                log.info("Loaded claim info cache")
-            except ValueError:
-                log.warning("Unable to load claim info cache")
 
     def _check_network_connection(self):
         self.connected_to_internet = utils.check_connection()
@@ -670,12 +657,6 @@ class Daemon(AuthJSONRPCServer):
     def _get_long_count_timestamp(self):
         dt = utils.utcnow() - utils.datetime_obj(year=2012, month=12, day=21)
         return int(dt.total_seconds())
-
-    def _update_claim_cache(self):
-        f = open(os.path.join(self.db_dir, "stream_info_cache.json"), "w")
-        f.write(json.dumps(self.name_cache))
-        f.close()
-        return defer.succeed(True)
 
     @defer.inlineCallbacks
     def _resolve_name(self, name, force_refresh=False):
@@ -2038,7 +2019,7 @@ class Daemon(AuthJSONRPCServer):
                     If there was an error:
                     'error': (str) error message
 
-                    'claims_in_channel_pages': total number of pages with <page_size> results,
+                    'claims_in_channel': the total number of results for the channel,
 
                     If a page of results was requested:
                     'returned_page': page number returned,
@@ -2096,7 +2077,7 @@ class Daemon(AuthJSONRPCServer):
                 results[u] = resolved[u]
             else:
                 results[u] = {
-                        'claims_in_channel_pages': resolved[u]['claims_in_channel_pages']
+                        'claims_in_channel': resolved[u]['claims_in_channel']
                     }
                 if page:
                     results[u]['returned_page'] = page
